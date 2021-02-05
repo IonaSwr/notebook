@@ -1,0 +1,91 @@
+<style>
+*{
+    font-size: 0.5cm;
+}
+.lineVertical{
+    top:0;
+    height:100%;
+    width:1px;
+    position: fixed;
+    background-color: #eef;
+}
+.lineHorizontal{
+    left:0;
+    width:100%;
+    height:1px;
+    position: fixed;
+    background-color: #eef;
+}
+.cursor{
+    position: fixed;   
+    background-color: #ddf;
+}
+.character{
+    position: fixed;    
+    height: 0.5cm;
+    width: 0.5cm;
+    text-align: center;
+    color:blue
+    }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script>
+  var app = angular.module('myApp', []);
+
+  function getSizeInCM(sizeInPX) {
+    return sizeInPX * 2.54 / (96 * window.devicePixelRatio)
+  };
+
+  function getSizeInPIXELS(sizeInCM) {
+    return Math.floor(100 * (96 * window.devicePixelRatio*sizeInCM) /( 2.54)) / 100;
+  };
+
+app.controller('myCtrl', function($scope) {
+    
+  $scope.pixels = getSizeInPIXELS(0.5); 
+
+  $scope.arr = [];  
+  for(var i = 0 ; i < 200; i++)
+    $scope.arr.push(i);
+
+  $scope.rowStart=3;
+  $scope.cursorPos = {x:30,y:30};
+  $scope.onclick = function(e){
+    $scope.cursorPos.x =Math.floor( getSizeInCM(event.clientX) * 2 );
+    $scope.cursorPos.y =Math.floor( getSizeInCM(event.clientY) * 2 );
+    $scope.rowStart = $scope.cursorPos.x;
+  }
+
+  $scope.memory = []
+    
+  $scope.onkey = function(e){
+    
+    if(event.key == 'ArrowUp') $scope.cursorPos.y --;
+    else if(event.key == 'ArrowDown') $scope.cursorPos.y ++;
+    else if(event.key == 'ArrowLeft') $scope.cursorPos.x --;
+    else if(event.key == 'ArrowRight') $scope.cursorPos.x ++;
+    else if(event.key == 'Backspace') $scope.cursorPos.x --;
+    else if(event.key == 'Shift' || event.key == 'CapsLock'|| event.key == 'Alt'|| event.key == 'Control') {}
+    else if(event.key == 'Enter') {
+        $scope.cursorPos.x =$scope.rowStart;
+        $scope.cursorPos.y ++;
+    }
+    else {
+        $scope.memory.push({char:event.key,pos:{x:$scope.cursorPos.x,y:$scope.cursorPos.y}})
+        $scope.cursorPos.x ++;
+    }
+  
+  }
+})
+</script>
+<body ng-app='myApp' ng-controller='myCtrl' ng-mousedown="onclick(el)" ng-keydown="onkey(el)">
+    <div>
+
+        <div ng-repeat="i in arr" class="lineVertical" style="left:{{i*pixels}}px"></div>
+        <div ng-repeat="i in arr" class="lineHorizontal" style="top:{{i*pixels}}px"></div>
+
+        <div class="cursor" style="width:{{pixels}}px;height:{{pixels}}px;top:{{cursorPos.y*pixels}}px;left:{{cursorPos.x*pixels}}px;"></div>
+        <div ng-repeat="chr in memory" class="character" style="font-size:{{pixels}}px;top:{{chr.pos.y*pixels}}px;left:{{chr.pos.x*pixels}}px">{{chr.char}}</div>
+
+    </div>
+</body>
